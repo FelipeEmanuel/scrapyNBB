@@ -19,7 +19,6 @@ class JogosSpider(scrapy.Spider):
             timeFora = jogo.css('td.visitor_team_value span::text').get()
             campeonatoAno = jogo.css('td.champ_value::text').get()
             
-            
             resp_meta = {
                 'fase': fase,
                 'timeCasa': timeCasa,
@@ -39,42 +38,60 @@ class JogosSpider(scrapy.Spider):
              
     def parse_game_info(self, response):
         padrao = r'(\d+)/(\d+)'
-          
+        padrao2 = r'(\d+)[+](\d+)'
+        
         request = {
             'campeonatoAno': response.request.meta['campeonatoAno'],
             'fase': response.request.meta['fase'],
             'timeCasa': response.request.meta['timeCasa'],
             'pontosTimeCasa': int(response.request.meta['pontosTimeCasa']),
-            'acertos3PtsTimeCasa' : int(response.css('div.A3C .widget_value_one span::text').get()),           
-            'acertos2PtsTimeCasa' : int(response.css('div.A2C .widget_value_one span::text').get()),
-            'acertosTotaisTimeCasa' :  int(response.css('div.A3C .widget_value_one span::text').get()) + int(response.css('div.A2C .widget_value_one span::text').get()),          
-            'LanceLivreTimeCasa' : int(response.css('div.LLC .widget_value_one span::text').get()), 
-            'rebotesTimeCasa' : int(response.css('div.RT .widget_value_one span::text').get()),           
-            'assistsTimeCasa' : int(response.css('div.ASS .widget_value_one span::text').get()),           
-            'RoubadasTimeCasa' : int(response.css('div.BR .widget_value_one span::text').get()),  
-            'TocosTimeCasa' : int(response.css('div.TO .widget_value_one span::text').get()),
-            'FaltasTimeCasa' : int(response.css('div.FC .widget_value_one span::text').get()),
-            'EficienciaTimeCasa' : int(response.css('div.EF .widget_value_one span::text').get()),
+            
+            'acertos2PtsTimeCasa' : int(re.search(padrao, response.css('table.team_general_table tfooter td:nth-child(8)::text').get()).group(1)),
+            'acertos3PtsTimeCasa' : int(re.search(padrao, response.css('table.team_general_table tfooter td:nth-child(7)::text').get()).group(1)),         
+            'acertosTotaisTimeCasa' :  int(re.search(padrao, response.css('table.team_general_table tfooter td:nth-child(8)::text').get()).group(1)) + 
+                                        int(re.search(padrao, response.css('table.team_general_table tfooter td:nth-child(7)::text').get()).group(1)),                                   
+            'LancesLivresCertosTimeCasa' : int(re.search(padrao, response.css('table.team_general_table tfooter td:nth-child(9)::text').get()).group(1)), 
+            'rebotesDefensivosTimeCasa' : int(re.search(padrao2, response.css('table.team_general_table tfooter td:nth-child(5)::text').get()).group(1)),
+            'rebotesOfensivosTimeCasa' : int(re.search(padrao2, response.css('table.team_general_table tfooter td:nth-child(5)::text').get()).group(2)),
+            'rebotesTotaisTimeCasa' :  int(re.search(padrao2, response.css('table.team_general_table tfooter td:nth-child(5)::text').get()).group(1)) +
+                                        int(re.search(padrao2, response.css('table.team_general_table tfooter td:nth-child(5)::text').get()).group(2)),         
+            'assistsTimeCasa' : int(response.css('table.team_general_table tfooter td:nth-child(6)::text').get()),           
+            'RoubadasTimeCasa' : int(response.css('table.team_general_table tfooter td:nth-child(10)::text').get()),
+            'ErrosTimeCasa' : int(response.css('table.team_general_table tfooter td:nth-child(14)::text').get()),  
+            'TocosTimeCasa' : int(response.css('table.team_general_table tfooter td:nth-child(11)::text').get()),
+            'FaltasTimeCasa' : int(float(response.css('table.team_general_table tfooter td:nth-child(12)::text').get())),
+            'EficienciaTimeCasa' : int(response.css('table.team_general_table tfooter td:nth-child(17)::text').get()),
+            
             'Arremessos2PtsTimeCasa' : int(re.search(padrao, response.css('table.team_general_table tfooter td:nth-child(8)::text').get()).group(2)),
             'Arremessos3PtsTimeCasa' : int(re.search(padrao, response.css('table.team_general_table tfooter td:nth-child(7)::text').get()).group(2)),
             'ArremessosLLTimeCasa' : int(re.search(padrao, response.css('table.team_general_table tfooter td:nth-child(9)::text').get()).group(2)),
-            'ArremessosTotaisTimeCasa' : int(re.search(padrao, response.css('table.team_general_table tfooter td:nth-child(8)::text').get()).group(2)) + int(re.search(padrao, response.css('table.team_general_table tfooter td:nth-child(7)::text').get()).group(2)),
+            'ArremessosTotaisTimeCasa' : int(re.search(padrao, response.css('table.team_general_table tfooter td:nth-child(8)::text').get()).group(2)) + 
+                                        int(re.search(padrao, response.css('table.team_general_table tfooter td:nth-child(7)::text').get()).group(2)),
+            
             'timeFora': response.request.meta['timeFora'],
             'pontosTimeFora': int(response.request.meta['pontosTimeFora']),
-            'acertos3PtsTimeFora' : int(response.css('div.A3C .widget_value_two span::text').get()),
-            'acertos2PtsTimeFora' : int(response.css('div.A2C .widget_value_two span::text').get()),
-            'acertosTotaisTimeFora' :  int(response.css('div.A3C .widget_value_two span::text').get()) + int(response.css('div.A2C .widget_value_two span::text').get()),
-            'LanceLivreTimeFora' : int(response.css('div.LLC .widget_value_two span::text').get()),
-            'rebotesTimeFora' : int(response.css('div.RT .widget_value_two span::text').get()),
-            'assistsTimeFora' : int(response.css('div.ASS .widget_value_two span::text').get()),
-            'RoubadasTimeFora' : int(response.css('div.BR .widget_value_two span::text').get()),
-            'TocosTimeFora' : int(response.css('div.TO .widget_value_two span::text').get()),
-            'FaltasTimeFora' : int(response.css('div.FC .widget_value_two span::text').get()),
-            'EficienciaTimeFora' : int(response.css('div.EF .widget_value_two span::text').get()),
+            'acertos2PtsTimeFora' : int(re.search(padrao, response.css('table.team_two_table tfooter td:nth-child(8)::text').get()).group(1)),
+            'acertos3PtsTimeFora' : int(re.search(padrao, response.css('table.team_two_table tfooter td:nth-child(7)::text').get()).group(1)),
+            'acertosTotaisTimeFora' :  int(re.search(padrao, response.css('table.team_two_table tfooter td:nth-child(8)::text').get()).group(1)) +
+                                        int(re.search(padrao, response.css('table.team_two_table tfooter td:nth-child(7)::text').get()).group(1)),
+            'LancesLivresCertosTimeFora' : int(re.search(padrao, response.css('table.team_two_table tfooter td:nth-child(9)::text').get()).group(1)),
+            'rebotesDefensivosTimeFora' : int(re.search(padrao2, response.css('table.team_two_table tfooter td:nth-child(5)::text').get()).group(1)),
+            'rebotesOfensivosTimeFora' : int(re.search(padrao2, response.css('table.team_two_table tfooter td:nth-child(5)::text').get()).group(2)),
+            'rebotesTotaisTimeFora' :  int(re.search(padrao2, response.css('table.team_two_table tfooter td:nth-child(5)::text').get()).group(1)) + 
+                                        int(re.search(padrao2, response.css('table.team_two_table tfooter td:nth-child(5)::text').get()).group(2)),
+            'assistsTimeFora' : int(response.css('table.team_two_table tfooter td:nth-child(6)::text').get()),
+            'RoubadasTimeFora' : int(response.css('table.team_two_table tfooter td:nth-child(10)::text').get()),
+            'ErrosTimeFora' : int(response.css('table.team_two_table tfooter td:nth-child(14)::text').get()),
+            'TocosTimeFora' : int(response.css('table.team_two_table tfooter td:nth-child(11)::text').get()),
+            'FaltasTimeFora' : int(float(response.css('table.team_two_table tfooter td:nth-child(12)::text').get())),
+            'EficienciaTimeFora' : int(response.css('table.team_two_table tfooter td:nth-child(17)::text').get()),
+            
             'Arremessos2PtsTimeFora' : int(re.search(padrao, response.css('table.team_two_table tfooter td:nth-child(8)::text').get()).group(2)),
             'Arremessos3PtsTimeFora' : int(re.search(padrao, response.css('table.team_two_table tfooter td:nth-child(7)::text').get()).group(2)),
             'ArremessosLLTimeFora' : int(re.search(padrao, response.css('table.team_two_table tfooter td:nth-child(9)::text').get()).group(2)),
-            'ArremessosTotaisTimeFora' : int(re.search(padrao, response.css('table.team_two_table tfooter td:nth-child(8)::text').get()).group(2)) + int(re.search(padrao, response.css('table.team_two_table tfooter td:nth-child(7)::text').get()).group(2))
+            'ArremessosTotaisTimeFora' : int(re.search(padrao, response.css('table.team_two_table tfooter td:nth-child(8)::text').get()).group(2)) +
+                                            int(re.search(padrao, response.css('table.team_two_table tfooter td:nth-child(7)::text').get()).group(2)),
+            
         }
         
         yield request
